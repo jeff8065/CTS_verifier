@@ -6,8 +6,7 @@ function gitsync()
 	git remote add origin https://github.com/jeff8065/CTS_verifier.git
 	git pull --all 
 	git checkout -f remotes/origin/main
-	sleep 3
-	echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/*
+	sleep 5
 
 }
 function check_pip(){	
@@ -25,5 +24,7 @@ python  verifier.py
 }
 
 gitsync
+echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/*
+
 #check_pip
 run
