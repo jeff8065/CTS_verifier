@@ -8,8 +8,8 @@ function gitsync()
 	git checkout -f remotes/origin/main
 	sleep 5
 	chmod 777 /CTS_tool/CTSV/3PL_verifier/*
-	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/*
-	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/packaging/*
+#	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/*
+#	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/packaging/*
 
 }
 function check_pip(){	
