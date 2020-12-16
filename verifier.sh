@@ -6,7 +6,7 @@ function gitsync()
 	git remote add origin https://github.com/jeff8065/CTS_verifier.git
 	git pull --all 
 	git checkout -f remotes/origin/main
-
+	sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/*
 
 }
 function check_pip(){	
