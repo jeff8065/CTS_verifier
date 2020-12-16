@@ -7,6 +7,9 @@ function gitsync()
 	git pull --all 
 	git checkout -f remotes/origin/main
 	sleep 5
+	echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/*
+	echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/packages/*
+	echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/packages/packaging/*
 
 }
 function check_pip(){	
@@ -24,7 +27,6 @@ python  verifier.py
 }
 
 gitsync
-echo "1"| sudo chmod 755 /CTS_tool/CTSV/3PL_verifier/*
 
 #check_pip
 run
