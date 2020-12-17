@@ -20,6 +20,29 @@ function check_pip(){
 		echo "1"| sudo pip install configparser==3.3.0r2
 	fi
 }
+function addini()
+{
+echo "[version]
+
+cts4.4 = 4 
+cts5.0 = 10 
+cts5.1 = 28 
+cts6.0 = 32  
+cts7.0 = 32 
+cts7.1 = 27 
+cts8.0 = 19 
+cts8.1 = 18 
+cts9.0 = 9 
+cts10 = 3  
+cts11 = 2 
+
+[path]
+
+source = /CTS_tool/CTSV/ 
+
+" >config.ini
+
+}
 
 function run(){
 cd /CTS_tool/CTSV/3PL_verifier/
@@ -27,6 +50,8 @@ python  verifier.py
 }
 
 gitsync
-
+if [ "$config" == "" ];then
+addini
+fi
 #check_pip
 run
