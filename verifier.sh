@@ -1,4 +1,7 @@
 #!/bin/bash
+cd /CTS_tool/CTSV/3PL_verifier
+config=$(ls | grep config.ini)
+
 function gitsync()
 {
 	cd /CTS_tool/CTSV/3PL_verifier
@@ -20,6 +23,12 @@ function check_pip(){
 		echo "1"| sudo pip install configparser==3.3.0r2
 	fi
 }
+
+function run(){
+cd /CTS_tool/CTSV/3PL_verifier/
+python  verifier.py
+}
+
 function addini()
 {
 echo "[version]
@@ -43,14 +52,9 @@ source = /CTS_tool/CTSV/
 " >config.ini
 
 }
-
-function run(){
-cd /CTS_tool/CTSV/3PL_verifier/
-python  verifier.py
-}
-
 gitsync
 if [ "$config" == "" ];then
+echo "no!!!!!!!!!	"
 addini
 fi
 #check_pip
