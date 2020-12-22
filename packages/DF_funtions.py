@@ -379,7 +379,6 @@ def xlsx(self):
 
 def express_plus(self):
 	self.getselectserialID()
-#	top = Toplevel()
 	print "\n"+"===========================express_plus==========================="+"\n"
 
 
@@ -392,23 +391,20 @@ def express_plus(self):
 	with open("/CTS_tool/CTSV/3PL_verifier/GMS Express Plus test script - Android R/TestResult_" + str(devicename)+ ".txt","r") as file:
 		data = file.read()#.replace('\n', '')
 	#print(data)
+	running_jub="express_plus"
+	create(devicename,data,running_jub)
 
-	
-	top = Toplevel()
-	top.title(devicename+"_express_plus")
-	mesListbox = Text(top)
-	mesListbox.insert(END,data)
-	mesListbox.pack()
 
 	
 
 	print "==================================================================="	
-def create(self):
+def create(devicename,data,running_jub):
 #创建一个顶级弹窗
-    top = Toplevel()
-    top.title('我的弹窗')
-    msg = Message(top,text = '类似于弹出窗口，具有独立的窗口属性。',width = 150)
-    msg.pack()
+	top = Toplevel()
+	top.title(devicename+"_"+running_jub)
+	mesListbox = Text(top)
+	mesListbox.insert(END,data)
+	mesListbox.pack()
 
 
 def installVerifier (self):
