@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /CTS_tool/CTSV/3PL_verifier
 config=$(ls | grep config.ini)
-chmod 755 /CTS_tool/CTSV/3PL_verifier/"GMS Express Plus test script - Android R"/*
+chmod 755 /CTS_tool/CTSV/3PL_verifier/"GMS Express Plus test script - Android R"/.*
 function gitsync()
 {
 	cd /CTS_tool/CTSV/3PL_verifier
