@@ -395,7 +395,7 @@ def express_plus(self):
 
 	
 	top = Toplevel()
-	top.title(devicename+"express_plus")
+	top.title(devicename+"_express_plus")
 	mesListbox = Text(top)
 	mesListbox.insert(END,data)
 	mesListbox.pack()
