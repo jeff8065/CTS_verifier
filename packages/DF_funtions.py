@@ -2,7 +2,15 @@
 # -*- coding: UTF-8 -*-
 
 import subprocess,os,datetime,time,openpyxl,zipfile
+
+import ttk
+from Tkinter import *
 from packaging import version
+
+import tkMessageBox
+
+
+
 
 #import version
 
@@ -365,9 +373,42 @@ def xlsx(self):
 
 	filename1 = '/home/'+hostName+'/Desktop/'+model+'_'+time_Taiwan+'_check_list_gms4.7.xlsx'
 	#data_excel.save(filename=model+time_Taiwan+'_check_list_gms4.6.xlsx')
-	data_excel.save(filename1)
+	data_excel.save(filename1)	
 
 	print "==================================================================="	
+
+def express_plus(self):
+	self.getselectserialID()
+#	top = Toplevel()
+	print "\n"+"===========================express_plus==========================="+"\n"
+
+
+
+	devicename=subprocess.check_output(str("adb -s " + self.serialID + " shell getprop ro.build.product").split()).replace("\n","")
+	#print devicename
+	os.system('/CTS_tool/CTSV/3PL_verifier/GMS\ Express\ Plus\ test\ script\ -\ Android\ R/Express_20201023.sh' + ""  )
+
+
+	with open("/CTS_tool/CTSV/3PL_verifier/GMS Express Plus test script - Android R/TestResult_" + str(devicename)+ ".txt","r") as file:
+		data = file.read()#.replace('\n', '')
+	#print(data)
+
+	
+	top = Toplevel()
+	top.title(devicename+"express_plus")
+	mesListbox = Text(top)
+	mesListbox.insert(END,data)
+	mesListbox.pack()
+
+	
+
+	print "==================================================================="	
+def create(self):
+#创建一个顶级弹窗
+    top = Toplevel()
+    top.title('我的弹窗')
+    msg = Message(top,text = '类似于弹出窗口，具有独立的窗口属性。',width = 150)
+    msg.pack()
 
 
 def installVerifier (self):
