@@ -25,7 +25,7 @@ def defaultSettings(self):
 	propertys =  self.propertys
 #	print >> w ,(self.androidVersion)
 	devicename=subprocess.check_output(str("adb -s " + self.serialID + " shell getprop ro.build.product").split()).replace("\n","")
-	w = open('/CTS_tool/CTSV/3PL_verifier/packages/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), 'w+')
+	w = open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), 'w+')
 	
 	print >> w , "\n"+"===================== Default Settings 202005 ====================="+"\n"
 
@@ -349,7 +349,7 @@ def defaultSettings(self):
 #	print w.read()
 #	data = w.read()
 	
-	with open('/CTS_tool/CTSV/3PL_verifier/packages/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), "r") as file:
+	with open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), "r") as file:
 		data = file.read()#.replace('\n', '')
 	#print >> w ,(data)
 
