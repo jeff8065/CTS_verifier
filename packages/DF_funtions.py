@@ -184,14 +184,17 @@ def defaultSettings(self):
 					if 'com.google.android.apps.actionsservice' in packages:
 						print >> w , "ok"
 					else:
-					#need color item #	print >> w , ('\x1b[2;32;41m' + "go device ,this device no assistant but lack com.google.android.apps.actionsservice app"+ '\x1b[0m')
-					print >> w , ("go device ,this device no assistant but lack com.google.android.apps.actionsservice app")
+						print >> w , ("go device ,this device no assistant but lack com.google.android.apps.actionsservice app")
+
+						#need color item #	print >> w , ('\x1b[2;32;41m' + "go device ,this device no assistant but lack com.google.android.apps.actionsservice app"+ '\x1b[0m')
+						
+
 				elif go_device == "" or go_device == "false":
 					if ( 'com.google.android.apps.speechservices' in packages and 'com.google.android.apps.actionsservice' in packages):
 						print >> w , "ok"
 					else:
 					#need color item #	print >> w , ('\x1b[2;32;41m' + "normal device , this device no assistant but lack com.google.android.apps.speechservices or com.google.android.apps.actionsservice app"+ '\x1b[0m')
-					print >> w , ("normal device , this device no assistant but lack com.google.android.apps.speechservices or com.google.android.apps.actionsservice app")
+						print >> w , ("normal device , this device no assistant but lack com.google.android.apps.speechservices or com.google.android.apps.actionsservice app")
 				else:
 					#need color item #print >> w , ('\x1b[2;32;41m' + "something wrong"+ '\x1b[0m')
 					print >> w , ("something wrong")
@@ -207,7 +210,7 @@ def defaultSettings(self):
 						print >> w , "ok"
 					else:
 					#need color item #	print >> w , ('\x1b[2;32;41m' + "normal device include assistant ,can't use com.google.android.apps.speechservices or com.google.android.apps.actionsservice app"+ '\x1b[0m')
-					print >> w , ("normal device include assistant ,can't use com.google.android.apps.speechservices or com.google.android.apps.actionsservice app")
+						print >> w , ("normal device include assistant ,can't use com.google.android.apps.speechservices or com.google.android.apps.actionsservice app")
 				else:
 					#need color item #print >> w , ('\x1b[2;32;41m' + "something wrong"+ '\x1b[0m')
 					print >> w , ("something wrong")
