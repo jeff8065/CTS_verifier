@@ -11,11 +11,10 @@ function gitsync()
 	git checkout -f remotes/origin/main
 	sleep 5
 	chmod 777 /CTS_tool/CTSV/3PL_verifier/*
-#	chmod 755 /CTS_tool/CTSV/3PL_verifier/packages/
-#	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/packaging/*
 	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/Express_20201023.sh
 	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/get_coord.py
-	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/*
+	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/Express_20200116.sh
+	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/go_check_script.sh
 }
 function check_pip(){	
 	if [[ -z $( pip list --format=legacy | grep openpyxl ) ]]; then
