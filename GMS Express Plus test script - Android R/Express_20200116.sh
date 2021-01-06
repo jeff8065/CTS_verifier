@@ -1,10 +1,13 @@
 #!/bin/bash
-cd /CTS_tool/CTSV/3PL_verifier/"GMS Express Plus test script - Android R"/
 passed=0
 failed=0
 skipped=0
 
+
 start=$(date +%s.%N)
+cd /CTS_tool/CTSV/3PL_verifier/"GMS Express Plus test script - Android R"/
+# Check GMS Express Plus flag
+
 function serialAndToolToArray(){
 	
 	while getopts "s:" option
@@ -48,17 +51,15 @@ function serialAndToolToArray(){
 
 }
 serialAndToolToArray "$@"
-
-# Check GMS Express Plus flag
 check_flag() {
 	echo "===========================express_plus===========================" >> $testResult
 	echo "[$(date)]" >> $testResult
-	adb -s ${serialArray[$1]}  shell getprop | grep ro.build.fingerprint >> $testResult
-	adb -s ${serialArray[$1]}  shell getprop | grep ro.build.version.release >> $testResult
-	adb -s ${serialArray[$1]}  shell getprop | grep ro.com.google.gmsversion >> $testResult
-	adb -s ${serialArray[$1]}  shell getprop | grep ro.build.version.security_patch >> $testResult
+	adb -s ${serialArray[$1]} shell getprop | grep ro.build.fingerprint >> $testResult
+	adb -s ${serialArray[$1]} shell getprop | grep ro.build.version.release >> $testResult
+	adb -s ${serialArray[$1]} shell getprop | grep ro.com.google.gmsversion >> $testResult
+	adb -s ${serialArray[$1]} shell getprop | grep ro.build.version.security_patch >> $testResult
 
-	test=(`adb -s ${serialArray[$1]}  shell getprop | grep "ro.base_build" | grep -c noah`)
+	test=(`adb -s ${serialArray[$1]} shell getprop | grep "ro.base_build" | grep -c noah`)
 	if [ $test = 1 ]; then
     	echo This is Express baseline, noah is set >> $testResult
     	echo This is Express baseline, noah is set 
@@ -67,7 +68,7 @@ check_flag() {
     	echo "This is not Express baseline, noah flag not set (Optional for ODM/OEM device)"
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c com.google.android.feature.GMSEXPRESS_BUILD`)
+	test=( `adb -s ${serialArray[$1]} shell pm list features | grep -c com.google.android.feature.GMSEXPRESS_BUILD`)
 	if [ $test = 1 ]; then
     	echo GMS Express Flag is set!!! >> $testResult
     	echo GMS Express Flag is set!!!
@@ -76,7 +77,7 @@ check_flag() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Do not have GMS Express baseline flag (Optional for ODM/OEM device)"
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c com.google.android.feature.GMSEXPRESS_PLUS_BUILD`)
+	test=( `adb -s ${serialArray[$1]} shell pm list features | grep -c com.google.android.feature.GMSEXPRESS_PLUS_BUILD`)
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo GMS Express PLUS Flag is set!!! >> $testResult
@@ -89,109 +90,13 @@ check_flag() {
 	return $passed
 }
 
-check_smartspace() {
-	echo
-	echo Checking At a Glance Widget...
-	echo >> $testResult
-	echo At a Glance Widget: >> $testResult
-	adb -s ${serialArray[$1]}  shell input keyevent 03
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
-	test=(`grep -c com.google.android.googlequicksearchbox:id/smartspace_content window_dump.xml`)
-	if [ $test = 1 ]; then
-    	passed=$((passed+=1))
-    	echo At a Glance Widget is on DHS >> $testResult
-    	echo At a Glance Widget is on DHS
-	else
-    	failed=$((failed+=1))
-    	echo Error!!! At a Glance Widget is not on DHS >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) At a Glance Widget is not on DHS"
-	fi
-
-	rm window_dump.xml
-}
-
-check_google_dialer() {
-	echo
-	echo Checking Google Dialer...
-	echo >> $testResult
-	echo Google Dialer: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c android.hardware.telephony` )
-	if [ $test = 0 ]; then
-		skipped=$((skipped+=1))
-		echo Tablet does not requires to preload Google Dialer
-		echo Tablet does not requires to preload Google Dialer >> $testResult
-		return
-	fi
-
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.dialer` )
-	if [ $test = 1 ]; then
-    	passed=$((passed+=1))
-    	echo Google Dialer is preloaded and the only Dialer app >> $testResult
-    	echo Google Dialer is preloaded and the only Dialer app
-	else
-    	failed=$((failed+=1))
-    	echo "Error!!! Google Dialer is not preloaded or the only Dialer app(Waived if it is WiFi only tablet)" >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Dialer is not preloaded or the only Dialer app(Waived if it is WiFi only tablet)"
-	fi
-
-	sleep 2s
-}
-
-check_google_contacts() {
-	echo
-	echo Checking Google Contacts...
-	echo >> $testResult
-	echo Google Contacts: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.VIEW content://contacts/people/ | grep -c com.google.android.contacts` )
-	if [ $test = 1 ]; then
-    	passed=$((passed+=1))
-    	echo Google Contacts is preloaded and the only Contacts app >> $testResult
-    	echo Google Contacts is preloaded and the only Contacts app
-	else
-    	failed=$((failed+=1))
-    	echo Error!!! Google Contacts is not preloaded or the only Contacts app >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Contacts is not preloaded or the only Contacts app"
-	fi
-
-	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.dialer
-	sleep 2s
-}
-
-check_3P_OTA() {
-	echo
-	echo Checking 3P OTA Engine...
-	echo >> $testResult
-	echo 3P OTA Engine: >> $testResult
-	ota1=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.rock.gota` )
-	ota2=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.adups.fota` )
-	ota3=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.dtinfo.tools` )
-	ota4=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.xfota` )
-	ota5=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.redstone.ota.ui` )
-	ota6=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.adups.fota.sysoper` )
-	ota7=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.thundersoft.zdm` )
-	ota8=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.fota.digitime` )
-	if [ $ota1 = 0 -a $ota2 = 0 -a $ota3 = 0 -a $ota4 = 0 -a $ota5 = 0 -a $ota6 = 0 -a $ota7 = 0 -a $ota8 = 0 ]; then
-    	passed=$((passed+=1))
-    	echo 3P OTA Engine is not using >> $testResult
-    	echo 3P OTA Engine is not using
-	else
-    	failed=$((failed+=1))
-    	echo Error!!! 3P OTA Engine is not using >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) 3P OTA Engine is not using"
-	fi
-
-	sleep 1s
-}
-
 # Check Assistant(Normal)
 check_assistant() {
 	echo
 	echo Checking Google Assistant...
 	echo >> $testResult
 	echo Google Assistant: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.googlequicksearchbox` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.VOICE_COMMAND | grep -c com.google.android.googlequicksearchbox` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Assistant is the only assistant >> $testResult
@@ -203,13 +108,13 @@ check_assistant() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.googlequicksearchbox
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.googlequicksearchbox
 	sleep 2s
 
 	# Check Assistant icon in DHS
-	adb -s ${serialArray[$1]}  shell input keyevent 03
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} shell input keyevent 03
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test=(`grep -c Assistant window_dump.xml`)
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
@@ -229,7 +134,7 @@ check_assistant_eea() {
 	echo Checking Google Assistant...
 	echo >> $testResult
 	echo Google Assistant: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.googlequicksearchbox` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.VOICE_COMMAND | grep -c com.google.android.googlequicksearchbox` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Assistant is the only assistant >> $testResult
@@ -240,13 +145,15 @@ check_assistant_eea() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Assistant is not the only assistant"
 	fi
 
+	sleep 1s
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.googlequicksearchbox
 	sleep 2s
 
 	# Check Assistant icon in DHS
-	adb -s ${serialArray[$1]}  shell input keyevent 03
-	adb -s ${serialArray[$1]}  shell input touchscreen swipe 600 600 100 600
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input touchscreen swipe 600 600 100 600
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test=(`grep -c Assistant window_dump.xml`)
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
@@ -267,7 +174,7 @@ check_assistant_go() {
 	echo Checking Google Assistant...
 	echo >> $testResult
 	echo Google Assistant: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.ASSIST | grep -c com.google.android.apps.assistant` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.ASSIST | grep -c com.google.android.apps.assistant` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Assistant is the only assistant >> $testResult
@@ -279,7 +186,7 @@ check_assistant_go() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.apps.assistant
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.assistant
 	sleep 2s
 }
 
@@ -289,7 +196,7 @@ check_search() {
 	echo Checking Google Search...
 	echo >> $testResult
 	echo Google Search: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages -i | grep -c com.google.android.googlequicksearchbox` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.googlequicksearchbox` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Search is preloaded >> $testResult
@@ -300,7 +207,7 @@ check_search() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Search is not preloaded"
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.WEB_SEARCH -e query wikipedia | grep -c com.google.android.googlequicksearchbox` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.WEB_SEARCH -e query wikipedia | grep -c com.google.android.googlequicksearchbox` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google search is the only search engine in the device >> $testResult
@@ -312,7 +219,7 @@ check_search() {
 	fi
 
 	sleep 3s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.googlequicksearchbox
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.googlequicksearchbox
 	sleep 1s
 }
 
@@ -322,7 +229,7 @@ check_search_go() {
 	echo Checking Google Search...
 	echo >> $testResult
 	echo Google Search: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages -i | grep -c com.google.android.apps.searchlite` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.apps.searchlite` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Search is preloaded >> $testResult
@@ -333,7 +240,7 @@ check_search_go() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Search is not preloaded"
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.WEB_SEARCH -e query wikipedia | grep -c com.google.android.apps.searchlite` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.WEB_SEARCH -e query wikipedia | grep -c com.google.android.apps.searchlite` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google search is the only search engine in the device >> $testResult
@@ -345,17 +252,32 @@ check_search_go() {
 	fi
 
 	sleep 3s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.apps.searchlite
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.searchlite
 	sleep 1s
 }
 
 # Check Chrome
 check_chrome() {
 	# Back to DHS
-	adb -s ${serialArray[$1]}  shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input keyevent 03
+	echo
+	echo Checking Chrome...
+	echo >> $testResult
+	echo Chrome: >> $testResult
+	# Check Chrome is preloaded or not
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.android.chrome` )
+	if [ $test = 1 ]; then
+    	passed=$((passed+=1))
+    	echo Chrome is preloaded >> $testResult
+    	echo Chrome is preloaded
+	else
+    	failed=$((failed+=1))
+    	echo Error!!! Chrome is not preloaded >> $testResult
+    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Chrome is not preloaded"
+	fi
 
 	# Check default browser
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.android.chrome` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.VIEW -d 'https://www.wikipedia.org/'  | grep -c com.android.chrome` )
 	if [ $test = 1 ]; then
    		passed=$((passed+=1))
     	echo Chrome is the default browser >> $testResult
@@ -367,12 +289,14 @@ check_chrome() {
 	fi
 
 	sleep 2s
+	adb -s ${serialArray[$1]} shell am force-stop com.android.chrome
+	sleep 1s
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input keyevent 03
 	# Check Chrome is at hotseat
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test1=(`xmllint /tmp/view.xml --xpath '//node[contains(@resource-id,"hotseat")]/node/node/@text' | grep -c Chrome`)
 	test2=(`xmllint /tmp/view.xml --xpath '//node[contains(@resource-id,"hotseat")]/node/node/node/@text' | grep -c Chrome`)
 	if [ $test1 = 1 -o $test2 = 1 ]; then
@@ -396,7 +320,7 @@ check_messages() {
 	echo Android Message: >> $testResult
 	# Check Android Messages is preloaded
 
-	test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c android.hardware.telephony` )
+	test=( `adb -s ${serialArray[$1]} shell pm list features | grep -c android.hardware.telephony` )
 	if [ $test = 0 ]; then
 		skipped=$((skipped+=1))
 		echo Tablet does not requires to preload Android Message
@@ -404,7 +328,7 @@ check_messages() {
 		return
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.apps.messaging` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.apps.messaging` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Android Message is preloaded >> $testResult
@@ -416,11 +340,11 @@ check_messages() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input keyevent 03
 
 	# Check Android Message is at the hotseat
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test1=(`xmllint /tmp/view.xml --xpath '//node[contains(@resource-id,"hotseat")]/node/node/@text' | grep -c Messages`)
 	test2=(`xmllint /tmp/view.xml --xpath '//node[contains(@resource-id,"hotseat")]/node/node/node/@text' | grep -c Messages`)
 	if [ $test1 = 1 -o $test2 = 1 ]; then
@@ -435,8 +359,19 @@ check_messages() {
 
 	rm window_dump.xml
 
+	# Check default messages
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.SENDTO -d sms:CCXXXXXXXXXX | grep -c com.google.android.apps.messaging` )
+	if [ $test = 1 ]; then
+    	passed=$((passed+=1))
+    	echo Android Message is the default >> $testResult
+    	echo Android Message is the default
+	else
+    	failed=$((failed+=1))
+    	echo Error!!! Android Message is not the default >> $testResult
+    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Android Message is not the default"
+	fi
 	# Check Android Messages flag 
-	test=( `adb -s ${serialArray[$1]}  shell getprop | grep ro.com.google.acsa | grep -c true` )
+	test=( `adb -s ${serialArray[$1]} shell getprop | grep ro.com.google.acsa | grep -c true` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Android Message ro.com.google.acsa is set >> $testResult
@@ -448,6 +383,8 @@ check_messages() {
 	fi
 
 	sleep 3s
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.messaging
+	sleep 1s
 }
 
 # Check Google Photo
@@ -457,7 +394,18 @@ check_photo() {
 	echo >> $testResult
 	echo Google Photo: >> $testResult
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.apps.photos` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.PICK -t image/* | grep -c com.google.android.apps.photos` )
+	if [ $test = 1 ]; then
+    	passed=$((passed+=1))
+    	echo Google photo is the default app to pick image. >> $testResult
+    	echo Google photo is the default app to pick image.
+	else
+    	failed=$((failed+=1))
+    	echo Error!!! Google photo is the default app to pick image. >> $testResult
+    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google photo is the default app to pick image."
+	fi
+
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a com.android.camera.action.REVIEW -t image/* | grep -c com.google.android.apps.photos` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google photo is the default app to review image. >> $testResult
@@ -469,6 +417,17 @@ check_photo() {
 	fi
 
 	sleep 3s
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.photos
+	sleep 1s
+
+	# Check Camera app preview default
+	echo Check Camera preview Gallery
+	echo Open camera, capture a photo and check whether Gallery Go is the default gallery >> $testResult
+	echo "$(tput bold)$(tput setaf 4)Open camera, capture a photo and check whether Gallery Go is the default gallery$(tput sgr0)"
+	adb -s ${serialArray[$1]} shell am start -W -a android.media.action.STILL_IMAGE_CAMERA
+	sleep 1s
+	adb -s ${serialArray[$1]} shell input keyevent 27
+	sleep 1s
 }
 
 # Check Gallery Go
@@ -477,9 +436,19 @@ check_gallery_go() {
 	echo Checking Gallery Go...
 	echo >> $testResult
 	echo Gallery Go: >> $testResult
-
 	# Check Gallery Go is default
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys role | grep -c com.google.android.apps.photosgo` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.PICK -t image/* | grep -c com.google.android.apps.photosgo` )
+	if [ $test = 1 ]; then
+    	passed=$((passed+=1))
+    	echo Gallery Go is the default app to pick image. >> $testResult
+    	echo Gallery Go is the default app to pick image.
+	else
+    	failed=$((failed+=1))
+    	echo Error!!! Gallery Go is the default app to pick image. >> $testResult
+    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Gallery Go is the default app to pick image."
+	fi
+	# Check Gallery Go is default
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a com.android.camera.action.REVIEW -t image/* | grep -c com.google.android.apps.photosgo` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Gallery Go is the default app to review image. >> $testResult
@@ -491,6 +460,16 @@ check_gallery_go() {
 	fi
 
 	sleep 3s
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.photosgo
+	sleep 1s
+
+	echo Check Camera preview Gallery
+	echo Open camera, capture a photo and check whether Gallery Go is the default gallery >> $testResult
+	echo "$(tput bold)$(tput setaf 4)Open camera, capture a photo and check whether Gallery Go is the default gallery$(tput sgr0)"
+	adb -s ${serialArray[$1]} shell am start -W -a android.media.action.STILL_IMAGE_CAMERA
+	sleep 1s
+	adb -s ${serialArray[$1]} shell input keyevent 27
+	sleep 1s
 }
 
 # Check Google Calendar
@@ -499,7 +478,7 @@ check_calendar() {
 	echo Checking Google Calendar...
 	echo >> $testResult
 	echo Google Calendar: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages -i | grep -c com.google.android.calendar` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.calendar` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Calendar is preloaded >> $testResult
@@ -510,7 +489,7 @@ check_calendar() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Google Calendar is not preloaded"
 	fi
 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.VIEW -d content://com.android.calendar/time/1410665898789 | grep -c com.google.android.calendar` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.VIEW -d content://com.android.calendar/time/1410665898789 | grep -c com.google.android.calendar` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Google Calendar is the default Calendar >> $testResult
@@ -522,7 +501,7 @@ check_calendar() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.calendar
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.calendar
 	sleep 1s
 }
 
@@ -532,7 +511,7 @@ check_gmail() {
 	echo Checking Gmail...
 	echo >> $testResult
 	echo Gmail: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages -i | grep -c com.google.android.gm` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.gm` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail is preloaded >> $testResult
@@ -545,7 +524,7 @@ check_gmail() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.SENDTO -d mailto:someone@gmail.com | grep -c com.google.android.gm` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.SENDTO -d mailto:someone@gmail.com | grep -c com.google.android.gm` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail is the default Email >> $testResult
@@ -558,7 +537,7 @@ check_gmail() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm | grep -c "android.permission.READ_CALENDAR: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm | grep -c "android.permission.READ_CALENDAR: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can read calendar >> $testResult
@@ -571,7 +550,7 @@ check_gmail() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm | grep -c "android.permission.WRITE_CALENDAR: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm | grep -c "android.permission.WRITE_CALENDAR: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can write calendar >> $testResult
@@ -584,7 +563,7 @@ check_gmail() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm | grep -c "android.permission.READ_CONTACTS: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm | grep -c "android.permission.READ_CONTACTS: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can read contacts >> $testResult
@@ -597,7 +576,7 @@ check_gmail() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm | grep -c "android.permission.WRITE_CONTACTS: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm | grep -c "android.permission.WRITE_CONTACTS: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can write contact >> $testResult
@@ -609,7 +588,7 @@ check_gmail() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.gm
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.gm
 	sleep 1s
 }
 
@@ -619,7 +598,7 @@ check_gmail_go() {
 	echo Checking Gmail...
 	echo >> $testResult
 	echo Gmail: >> $testResult
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages -i | grep -c com.google.android.gm.lite` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages -i | grep -c com.google.android.gm.lite` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail is preloaded >> $testResult
@@ -632,7 +611,7 @@ check_gmail_go() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.intent.action.SENDTO -d mailto:someone@gmail.com | grep -c com.google.android.gm.lite` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.intent.action.SENDTO -d mailto:someone@gmail.com | grep -c com.google.android.gm.lite` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail is the default Email >> $testResult
@@ -645,7 +624,7 @@ check_gmail_go() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.READ_CALENDAR: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.READ_CALENDAR: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can read calendar >> $testResult
@@ -658,7 +637,7 @@ check_gmail_go() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.WRITE_CALENDAR: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.WRITE_CALENDAR: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can write calendar >> $testResult
@@ -671,7 +650,7 @@ check_gmail_go() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.READ_CONTACTS: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.READ_CONTACTS: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can read contacts >> $testResult
@@ -684,7 +663,7 @@ check_gmail_go() {
 
 	sleep 1s
 
-	test=( `adb -s ${serialArray[$1]}  shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.WRITE_CONTACTS: granted=true"` )
+	test=( `adb -s ${serialArray[$1]} shell dumpsys package com.google.android.gm.lite | grep -c "android.permission.WRITE_CONTACTS: granted=true"` )
 	if [ $test -ge 1 ]; then
     	passed=$((passed+=1))
     	echo Gmail can write contact >> $testResult
@@ -696,7 +675,7 @@ check_gmail_go() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.gm.lite
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.gm.lite
 	sleep 1s
 }
 
@@ -707,7 +686,7 @@ check_files_by_google() {
 	echo >> $testResult
 	echo Files by Google: >> $testResult
 	# Check Files by Google is preloaded
-	test=( `adb -s ${serialArray[$1]}  shell pm list package -i | grep -c com.google.android.apps.nbu.files` )
+	test=( `adb -s ${serialArray[$1]} shell pm list package -i | grep -c com.google.android.apps.nbu.files` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Files by Google is preloaded >> $testResult
@@ -718,7 +697,7 @@ check_files_by_google() {
     	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Files by Google is not the only Files App"
 	fi
 	# Check File by Google is the only app for Files manager 
-	test=( `adb -s ${serialArray[$1]}  shell am start -W -a android.os.storage.action.MANAGE_STORAGE | grep -c com.google.android.apps.nbu.files` )
+	test=( `adb -s ${serialArray[$1]} shell am start -W -a android.os.storage.action.MANAGE_STORAGE | grep -c com.google.android.apps.nbu.files` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Files by Google is the only Files App >> $testResult
@@ -730,7 +709,7 @@ check_files_by_google() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.apps.nbu.files
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.nbu.files
 	sleep 1s
 }
 
@@ -741,7 +720,7 @@ check_duo() {
 	echo >> $testResult
 	echo Duo: >> $testResult
 	# Check Duo is preloaded
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages | grep -c com.google.android.apps.tachyon` )
+	test=( `adb -s ${serialArray[$1]} shell pm list packages | grep -c com.google.android.apps.tachyon` )
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
     	echo Duo is preloaded >> $testResult
@@ -753,15 +732,15 @@ check_duo() {
 	fi
 
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.apps.tachyon
+	adb -s ${serialArray[$1]} shell am force-stop com.google.android.apps.tachyon
 	sleep 1s
 
-	adb -s ${serialArray[$1]}  shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input keyevent 03
 	sleep 2s
 
 	# Check Duo on DHS
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test=(`grep -c Duo window_dump.xml`)
 	if [ $test = 1 ]; then
     	passed=$((passed+=1))
@@ -775,58 +754,7 @@ check_duo() {
 
 	rm window_dump.xml
 
-	adb -s ${serialArray[$1]}  shell input keyevent 03
-	sleep 2s
-}
-
-# Check Duo Go
-check_duo_go() {
-	echo
-	echo Checking Duo Go...
-	echo >> $testResult
-	echo Duo: >> $testResult
-	# Check Duo is preloaded
-	test=( `adb -s ${serialArray[$1]}  shell pm list packages | grep -c com.google.android.apps.tachyon` )
-	if [ $test = 1 ]; then
-    	passed=$((passed+=1))
-    	echo Duo Go is preloaded >> $testResult
-    	echo Duo Go is preloaded
-	else
-    	failed=$((failed+=1))
-    	echo Error!!! Duo Go is not preloaded >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Duo is not preloaded"
-	fi
-	sleep 1s
-	adb -s ${serialArray[$1]}  shell am force-stop com.google.android.apps.tachyon
-	sleep 1s
-
-	adb -s ${serialArray[$1]}  shell input keyevent 03
-	sleep 2s
-
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
-	test1=( `grep -c Duo window_dump.xml` )
-
-	#Get Google Folder Bounds
-	python3 get_coord.py
-
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
-	test2=( `grep -c Duo window_dump.xml` )
-
-	if [ $test1 = 1 ] || [ $test2 = 1 ]; then
-		passed=$((passed+=1))
-    	echo Duo Go is on DHS or Google folder >> $testResult
-    	echo Duo Go is on DHS or Google folder
-    else
-    	failed=$((failed+=1))
-    	echo Error!!! Duo Go is not on DHS or Google folder >> $testResult
-    	echo "$(tput setaf 1)$(tput bold)Error!!!$(tput sgr0) Duo Go is not on DHS or Google folder"
-    fi
-	
-	rm window_dump.xml
-
-	adb -s ${serialArray[$1]}  shell input keyevent 03
+	adb -s ${serialArray[$1]} shell input keyevent 03
 	sleep 2s
 }
 
@@ -838,7 +766,7 @@ check_gboard() {
 	echo Gboard: >> $testResult
 	
 	# Check Gboard is preloaded
-	test=( `adb -s ${serialArray[$1]}  shell settings get secure default_input_method | grep -c com.google.android.inputmethod` )
+	test=( `adb -s ${serialArray[$1]} shell settings get secure default_input_method | grep -c com.google.android.inputmethod` )
 	if [ $test = 1 ]; then
 		passed=$((passed+=1))
 		echo Gboard is preloaded >> $testResult
@@ -850,7 +778,7 @@ check_gboard() {
     fi
 
     # Check Gboard is default IME
-    test=( `adb -s ${serialArray[$1]}  shell ime list -a | grep mId | grep -v -c mId=com.google.android` )
+    test=( `adb -s ${serialArray[$1]} shell ime list -a | grep mId | grep -v -c mId=com.google.android` )
     if [ $test = 0 ]; then
     	passed=$((passed+=1))
 		echo Gboard is default IME >> $testResult
@@ -868,11 +796,11 @@ check_google_feed() {
 	echo Checking Google Feed -1 screen....
 	echo >> $testResult
 	echo Google Feed: >> $testResult
-	adb -s ${serialArray[$1]}  shell input touchscreen swipe 10 600 600 600
+	adb -s ${serialArray[$1]} shell input touchscreen swipe 10 600 600 600
 	sleep 1s
-	adb -s ${serialArray[$1]}  shell input touchscreen swipe 100 100 100 1000
-	adb -s ${serialArray[$1]}  pull $(adb -s ${serialArray[$1]}  shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
-	adb -s ${serialArray[$1]}  pull sdcard/window_dump.xml
+	adb -s ${serialArray[$1]} shell input touchscreen swipe 100 100 100 1000
+	adb -s ${serialArray[$1]} pull $(adb -s ${serialArray[$1]} shell uiautomator dump | grep -oP '[^ ]+.xml') /tmp/view.xml
+	adb -s ${serialArray[$1]} pull sdcard/window_dump.xml
 	test1=( `grep -c Updates window_dump.xml` )
 	test2=( `grep -c sign_in_button window_dump.xml` )
 	if [ $test1 = 1 -o $test2 ]; then
@@ -889,7 +817,7 @@ check_google_feed() {
 
 # Main
 echo
-echo "$(tput bold)$(tput setaf 4)GMS Express Plus requirement testing script for Android R$(tput sgr0)"
+echo "$(tput bold)$(tput setaf 4)GMS Express Plus requirement testing script $(tput sgr0)"
 
 # Check device is 1GB RAM or above
 total_ram=$(echo "$meminfo_text"|grep -m 1 "Total RAM:"|cut -d '(' -f 1|cut -d ':' -f 2|awk '{$1=$1;print}'|tr -d ',kBK' || echo 0)
@@ -898,21 +826,22 @@ if [ $total_ram -lt 800000 ]; then
     exit
 fi
 
-productname=(`adb -s ${serialArray[$1]}  shell getprop | grep ro.build.product | awk -F ":" '{print$2}' | tr -d '[]'`)
+productname=(`adb -s ${serialArray[$1]} shell getprop | grep ro.build.product | awk -F ":" '{print$2}' | tr -d '[]'`)
 time=$(date +"%F")
 testResult=TestResult_$productname"_"$time.txt
 rm -rf $testResult
 echo "remove testResult"
 touch $testResult
 
+touch $testResult
 # Wake up device
-adb -s ${serialArray[$1]}  shell input keyevent 224
-adb -s ${serialArray[$1]}  shell input keyevent 82
-adb -s ${serialArray[$1]}  shell input keyevent 03
+adb -s ${serialArray[$1]} shell input keyevent 224
+adb -s ${serialArray[$1]} shell input keyevent 82
+adb -s ${serialArray[$1]} shell input keyevent 03
 
 # Checking whether Go device or not
-test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c android.hardware.ram.low` )
-isEEA=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c com.google.android.feature.EEA_DEVICE` )
+test=( `adb -s ${serialArray[$1]} shell pm list features | grep -c android.hardware.ram.low` )
+isEEA=( `adb -s ${serialArray[$1]} shell pm list features | grep -c com.google.android.feature.EEA_DEVICE` )
 if [ $test = 0 -a $isEEA = 0 ]; then
     echo "$(tput setaf 4)$(tput bold)Testing GMS Express Plus ROW build requirement(Normal) now...$(tput sgr0)"
     # Check Express flag
@@ -923,14 +852,6 @@ if [ $test = 0 -a $isEEA = 0 ]; then
 	check_search
 	# Check Chrome
 	check_chrome
-	# Check Google Dialer
-	check_google_dialer
-	# check Google Contacts
-	check_google_contacts
-	# Check 3P OTA engine
-	check_3P_OTA
-	#check Smartspace
-	check_smartspace
 	# Check Calendar
 	check_calendar
 	# Check Gmail
@@ -946,7 +867,7 @@ if [ $test = 0 -a $isEEA = 0 ]; then
 	# Check Google feed
 	check_google_feed
 	# Check Google Photo
-	adb -s ${serialArray[$1]}  shell input keyevent 224
+	adb -s ${serialArray[$1]} shell input keyevent 224
 	check_photo
 elif [ $test = 0 -a $isEEA = 1 ]; then
 	echo "$(tput setaf 4)$(tput bold)Testing GMS Express Plus EEA build requirement(Normal) now...$(tput sgr0)"
@@ -958,14 +879,6 @@ elif [ $test = 0 -a $isEEA = 1 ]; then
 	check_search
 	# Check Chrome
 	check_chrome
-	# Check Google Dialer
-	check_google_dialer
-	# check Google Contacts
-	check_google_contacts
-	# Check 3P OTA engine
-	check_3P_OTA
-	#check Smartspace
-	check_smartspace
 	# Check Calendar
 	check_calendar
 	# Check Gmail
@@ -981,11 +894,11 @@ elif [ $test = 0 -a $isEEA = 1 ]; then
 	# Check Google feed
 	check_google_feed
 	# Check Google Photo
-	adb -s ${serialArray[$1]}  shell input keyevent 224
+	adb -s ${serialArray[$1]} shell input keyevent 224
 	check_photo
 fi
 
-test=( `adb -s ${serialArray[$1]}  shell pm list features | grep -c android.hardware.ram.low` )
+test=( `adb -s ${serialArray[$1]} shell pm list features | grep -c android.hardware.ram.low` )
 if [ $test = 1 -a $total_ram -lt 1700000 ]; then
 	echo "$(tput setaf 4)$(tput bold)Testing GMS Express Plus Go(below 2GB RAM) requirement now...$(tput sgr0)"
     # Check Express flag
@@ -996,12 +909,6 @@ if [ $test = 1 -a $total_ram -lt 1700000 ]; then
 	check_search_go
 	# Check Chrome
 	check_chrome
-	# Check Google Dialer
-	check_google_dialer
-	# check Google Contacts
-	check_google_contacts
-	# Check 3P OTA engine
-	check_3P_OTA
 	# Check Calendar
 	check_calendar
 	# Check Gmail Go
@@ -1011,11 +918,11 @@ if [ $test = 1 -a $total_ram -lt 1700000 ]; then
 	# Check Messages
 	check_messages
 	# Check Duo
-	check_duo_go
+	check_duo
 	# Check Gboard
 	check_gboard
 	# Check gallery Photo
-	adb -s ${serialArray[$1]}  shell input keyevent 224
+	adb -s ${serialArray[$1]} shell input keyevent 224
 	check_gallery_go
 elif [ $test = 1 -a $total_ram -gt 1700000 ]; then
 	echo "$(tput setaf 4)$(tput bold)Testing GMS Express Plus Go(2GB RAM) requirement now...$(tput sgr0)"
@@ -1027,12 +934,6 @@ elif [ $test = 1 -a $total_ram -gt 1700000 ]; then
 	check_search_go
 	# Check Chrome
 	check_chrome
-	# Check Google Dialer
-	check_google_dialer
-	# check Google Contacts
-	check_google_contacts
-	# Check 3P OTA engine
-	check_3P_OTA
 	# Check Calendar
 	check_calendar
 	# Check Gmail(full version)
@@ -1042,11 +943,11 @@ elif [ $test = 1 -a $total_ram -gt 1700000 ]; then
 	# Check Messages
 	check_messages
 	# Check Duo
-	check_duo_go
+	check_duo
 	# Check Gboard
 	check_gboard
 	# Check gallery Photo
-	adb -s ${serialArray[$1]}  shell input keyevent 224
+	adb -s ${serialArray[$1]} shell input keyevent 224
 	check_gallery_go
 fi
 
