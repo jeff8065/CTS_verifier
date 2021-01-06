@@ -11,10 +11,11 @@ function gitsync()
 	git checkout -f remotes/origin/main
 	sleep 5
 	chmod 777 /CTS_tool/CTSV/3PL_verifier/*
-#	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/*
+#	chmod 755 /CTS_tool/CTSV/3PL_verifier/packages/
 #	chmod 777 /CTS_tool/CTSV/3PL_verifier/packages/packaging/*
 	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/Express_20201023.sh
 	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/get_coord.py
+	chmod 755 /CTS_tool/CTSV/3PL_verifier/'GMS Express Plus test script - Android R'/*
 }
 function check_pip(){	
 	if [[ -z $( pip list --format=legacy | grep openpyxl ) ]]; then
@@ -53,7 +54,7 @@ source = /CTS_tool/CTSV/
 " >config.ini
 
 }
-gitsync
+#gitsync
 if [ "$config" == "" ];then
 echo "no!!!!!!!!!	"
 addini
