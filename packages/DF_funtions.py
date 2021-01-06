@@ -10,7 +10,7 @@ from packaging import version
 import tkMessageBox
 
 
-
+#ss=""
 #import version
 
 def test(self):
@@ -23,9 +23,10 @@ def defaultSettings(self):
 	packages  = self.packages
 	features =  self.features
 	propertys =  self.propertys
+
 #	print >> w ,(self.androidVersion)
 	devicename=subprocess.check_output(str("adb -s " + self.serialID + " shell getprop ro.build.product").split()).replace("\n","")
-	w = open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), 'w+')
+	w = open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", 'w+')
 	
 	print >> w , "\n"+"===================== Default Settings 202005 ====================="+"\n"
 
@@ -240,11 +241,12 @@ def defaultSettings(self):
 
 				if "com.google.android.feature.WELLBEING" not in features:
 					#need color item print >> w , ('\x1b[2;32;41m' + "no wellbeing feature "+ '\x1b[0m')
-					print >> w , ('\x1b[2;32;41m' + "no wellbeing feature "+ '\x1b[0m')
+					print >> w , ("no wellbeing feature ")
+
 
 				if "com.google.android.apps.wellbeing" not in packages:
 					#need color item print >> w , ('\x1b[2;32;41m' + "no wellbeing app "+ '\x1b[0m')
-					print >> w , ('\x1b[2;32;41m' + "no wellbeing app "+ '\x1b[0m')
+					print >> w , ( "no wellbeing app ")
 
 				try:
 					gmscoreversion=subprocess.check_output(str("adb -s "+self.serialID+" shell pm dump  com.google.android.gms | grep 'versionCode'  | sed 's/versionCode=//' ").split()).splitlines()
@@ -255,11 +257,11 @@ def defaultSettings(self):
 
 				if wellbeing_priv is None:
 					#need color item print >> w , ('\x1b[2;32;41m' + "no wellbeing app "+ '\x1b[0m')
-					print >> w , ('\x1b[2;32;41m' + "no wellbeing app "+ '\x1b[0m')
+					print >> w , ("no wellbeing app ")
 				else:
 					if 'priv-app' not in wellbeing_priv:
 						#need color item print >> w , ('\x1b[2;32;41m' + "wellbeing is not priv-app"+ '\x1b[0m')
-						print >> w , ('\x1b[2;32;41m' + "wellbeing is not priv-app"+ '\x1b[0m')
+						print >> w , ("wellbeing is not priv-app")
 
 					elif 'priv-app' in wellbeing_priv:
 						print >> w , "wellbeing is priv-app"
@@ -267,8 +269,8 @@ def defaultSettings(self):
 							if item.split()[0][0:5] <17785:
 							#need color item 	print >> w , ('\x1b[2;32;41m' + "gmscore version is "+item+ '\x1b[0m')
 							#need color item 	print >> w , ('\x1b[2;32;41m' + "this device have wellbeing but gmscore lower than 17.7.85"+ '\x1b[0m')
-								print >> w , ('\x1b[2;32;41m' + "gmscore version is "+item+ '\x1b[0m')
-								print >> w , ('\x1b[2;32;41m' + "this device have wellbeing but gmscore lower than 17.7.85"+ '\x1b[0m')
+								print >> w , ("gmscore version is "+item)
+								print >> w , ("this device have wellbeing but gmscore lower than 17.7.85")
 		except:
 			pass
 
@@ -319,21 +321,7 @@ def defaultSettings(self):
 	print >> w , "==================================================================="
 
 	#run go fuding
-	try:
-		try:
-			check_go = subprocess.check_output(str("adb shell getprop ro.com.google.gmsversion"), shell=True)[:-1]
-			check_funding = subprocess.check_output(str('adb shell pm list features | grep -c "com.google.android.feature.GMSEXPRESS_PLUS_BUILD"'), shell=True)[:-1]
-		except:
-			pass
-		if 'go' in check_go or 'GO' in check_go:
-			str_comment='/CTS_tool/CTSV/android_go/go_check_script.sh'
-			os.system(str_comment)
-		
-		if check_funding > 0 :
-			str_comment='/CTS_tool/CTSV/GMS_ExpressPlus_test_script/Express_20200116.sh'
-			os.system(str_comment)
-	except:
-		pass
+
 	EEA_check()
 	print >> w , "============================================================"
 	print >> w , ""
@@ -342,22 +330,42 @@ def defaultSettings(self):
 	os.system(str("adb -s "+self.serialID+"  shell am start -a android.intent.action.VIEW -d http://google.com"))
 	print >> w , ""
 	print >> w , "===========================DF End============================="
-	#w.write(check_fingerprint() + gms_core_check() +wellbeing_check() )
+
+
+
 	w.close()
 
-	#w = open('/CTS_tool/CTSV/3PL_verifier/packages/default_check/sss.txt', 'r')
-#	print w.read()
-#	data = w.read()
-	
-	with open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d"), "r") as file:
-		data = file.read()#.replace('\n', '')
-	#print >> w ,(data)
+
+
+
+	try:
+		try:
+			check_go = subprocess.check_output(str("adb -s "+ self.serialID +" shell getprop ro.com.google.gmsversion"), shell=True)[:-1]
+			check_funding = subprocess.check_output(str('adb -s '+ self.serialID +' shell pm list features | grep -c "com.google.android.feature.GMSEXPRESS_PLUS_BUILD"'), shell=True)[:-1]
+		except:
+			pass
+		if 'go' in check_go or 'GO' in check_go:
+			
+			go_check(self)
+			
+		
+		if check_funding > 0 :
+			
+			express_plus(self)
+
+	except:
+		pass
+
+
+
+	with open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", "r") as file:
+		data = file.read()
 
 
 
 	running_jub = "default_"+time.strftime("%Y-%m-%d")
 	create(devicename,data,running_jub)
-	w.close()
+	
 
 
 def openFolder(self):
@@ -437,27 +445,55 @@ def xlsx(self):
 
 	print  "==================================================================="	
 
-def express_plus(self):
+def go_check(self):
+
 	self.getselectserialID()
-	print  "\n"+"===========================express_plus==========================="+"\n"
-
-
 
 	devicename=subprocess.check_output(str("adb -s " + self.serialID + " shell getprop ro.build.product").split()).replace("\n","")
-	#print >> w , devicename
-	os.system('/CTS_tool/CTSV/3PL_verifier/GMS\ Express\ Plus\ test\ script\ -\ Android\ R/Express_20201023.sh' + ""  )
+	w = open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", 'a')
+	
+	os.system('/CTS_tool/CTSV/3PL_verifier/GMS\ Express\ Plus\ test\ script\ -\ Android\ R/go_check_script.sh'+ " -s "+ self.serialID)
+	
+	with open('/CTS_tool/CTSV/3PL_verifier/GMS Express Plus test script - Android R/go_check_'+str(devicename)+"_"+time.strftime("%Y%m%d")+".log","r") as file:
+		data = file.read()
+		print >> w , "===========================go_check==========================="
+		w.write(data)
+		print >> w ,"==================================================================="
+	
+	w.close()
 
+	print  "==================================================================="	
 
-	with open("/CTS_tool/CTSV/3PL_verifier/GMS Express Plus test script - Android R/TestResult_" + str(devicename)+ ".txt","r") as file:
-		data = file.read()#.replace('\n', '')
-	#print >> w ,(data)
-	running_jub="express_plus"
-	create(devicename,data,running_jub)
+def express_plus(self):
+	self.getselectserialID()
+	#print self.androidVersion
+	
 
+	devicename=subprocess.check_output(str("adb -s " + self.serialID + " shell getprop ro.build.product").split()).replace("\n","")
+	w = open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", 'a')
+	
+
+	
+	if str(self.androidVersion) == '11' :
+	
+		os.system('/CTS_tool/CTSV/3PL_verifier/GMS\ Express\ Plus\ test\ script\ -\ Android\ R/Express_20201023.sh' + " -s "+ self.serialID)
+	else :
+
+		os.system('/CTS_tool/CTSV/3PL_verifier/GMS\ Express\ Plus\ test\ script\ -\ Android\ R/Express_20200116.sh' + " -s "+ self.serialID)
+
+	with open("/CTS_tool/CTSV/3PL_verifier/GMS Express Plus test script - Android R/TestResult_" + str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt","r") as file:
+		print >> w, " "
+		data = file.read()
+
+		w.write(data)
+		print >>w , "==================================================================="
+	running_jub="express_plus"+time.strftime("%Y-%m-%d")
+#	create(devicename,data,running_jub)
+	w.close()
 
 	
 
-	print >> w , "==================================================================="	
+	print  "==================================================================="	
 def create(devicename,data,running_jub):
 #创建一个顶级弹窗
 	top = Toplevel()
