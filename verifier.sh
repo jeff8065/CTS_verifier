@@ -53,7 +53,7 @@ source = /CTS_tool/CTSV/
 " >config.ini
 
 }
-#gitsync
+gitsync
 if [ "$config" == "" ];then
 echo "no!!!!!!!!!	"
 addini
