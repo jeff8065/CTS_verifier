@@ -342,12 +342,6 @@ def defaultSettings(self):
 	except:
 		pass
 
-
-
-	with open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", "r") as file:
-		data = file.read()
-
-
 	#run go fuding
 
 	EEA_check()
@@ -362,6 +356,12 @@ def defaultSettings(self):
 
 
 	w.close()
+
+	with open('/CTS_tool/CTSV/3PL_verifier/default_check/'+str(devicename)+"_"+time.strftime("%Y-%m-%d")+".txt", "r") as file:
+		data = file.read()
+
+
+
 
 	running_jub = "default_"+time.strftime("%Y-%m-%d")
 	create(devicename,data,running_jub)
