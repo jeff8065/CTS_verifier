@@ -276,7 +276,7 @@ class Main(object):
 		newOwnerButton = Button(BYOD_funtion, text="OS8_Owner", command=lambda: Ver_funtions.newOwner(self))
 		newOwnerButton.grid(row=1, column=1, ipadx=1, ipady=3, pady=3,sticky=N+S+E+W)
 
-		CrossButton = Button(BYOD_funtion, text="Cross", command=lambda: Ver_funtions.BYOD_Cross(self))
+		CrossButton = Button(BYOD_funtion, text="CrossProfile", command=lambda: Ver_funtions.BYOD_Cross(self))
 		CrossButton.grid(row=1, column=2, ipadx=1, ipady=3, pady=3,sticky=N+S+E+W)
 
 		#######sensors#########
