@@ -61,6 +61,13 @@ def BYOD_VPN_NAO(self):
 	print "\n"+"==================================================================="	
 
 
+def BYOD_Cross(self):
+	self.getselectserialID()
+	print "\n"+"============================= install  CrossProfileTestApp =============================="+"\n"
+	os.system(self.uninstall_cmd+" uninstall com.android.cts.CrossProfileTestApp")
+	os.system(self.install_cmd+"CrossProfileTestApp.apk")
+	print "\n"+"==================================================================="	
+
 
 def newOwner(self):
 	self.getselectserialID()
