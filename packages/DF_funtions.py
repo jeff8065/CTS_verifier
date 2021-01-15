@@ -320,20 +320,6 @@ def defaultSettings(self):
 	print >> w , "Device:"	
 	print >> w , "==================================================================="
 
-	#run go fuding
-
-	EEA_check()
-	print >> w , "============================================================"
-	print >> w , ""
-	print >> w , "Please check broser intent is correct"
-	print >> w , ""
-	os.system(str("adb -s "+self.serialID+"  shell am start -a android.intent.action.VIEW -d http://google.com"))
-	print >> w , ""
-	print >> w , "===========================DF End============================="
-
-
-
-	w.close()
 
 
 
@@ -362,6 +348,20 @@ def defaultSettings(self):
 		data = file.read()
 
 
+	#run go fuding
+
+	EEA_check()
+	print >> w , "============================================================"
+	print >> w , ""
+	print >> w , "Please check broser intent is correct"
+	print >> w , ""
+	os.system(str("adb -s "+self.serialID+"  shell am start -a android.intent.action.VIEW -d http://google.com"))
+	print >> w , ""
+	print >> w , "===========================DF End============================="
+
+
+
+	w.close()
 
 	running_jub = "default_"+time.strftime("%Y-%m-%d")
 	create(devicename,data,running_jub)
@@ -582,27 +582,27 @@ def adb41 (self):
 
 def EEA_V2(self):
 	self.getselectserialID()
-	print >> w , " 請在OOBE時就登入 EEA test account"
-	print >> w , " 選擇google作為預設Search engine"
-	print >> w , " 打開USB debug後 >> 跑腳本"
+	print " 請在OOBE時就登入 EEA test account"
+	print  " 選擇google作為預設Search engine"
+	print  " 打開USB debug後 >> 跑腳本"
 
-	print >> w , "Item E1"
-	print >> w ,  "*************************************************************************************"
+	print  "Item E1"
+	print   "*************************************************************************************"
 	os.system(str("adb -s " +self.serialID+ ' shell dumpsys package features | grep  EEA  '))
 	os.system(str("adb -s " +self.serialID+ ' shell dumpsys package features | grep  paid  '))
-	print >> w , "-------------------------------------------------------------------------------------\n"
+	print  "-------------------------------------------------------------------------------------\n"
 
-	print >> w , "Item E3"
-	print >> w ,  "*************************************************************************************"
+	print  "Item E3"
+	print   "*************************************************************************************"
 	os.system(str("adb -s " +self.serialID+ ' shell settings get secure selected_search_engine  '))
 	os.system(str("adb -s " +self.serialID+ ' shell settings get secure selected_search_engine_aga  '))
-	print >> w , "-------------------------------------------------------------------------------------\n"
+	print  "-------------------------------------------------------------------------------------\n"
 
-	print >> w , "Item E4"
-	print >> w ,  "*************************************************************************************"
+	print  "Item E4"
+	print   "*************************************************************************************"
 	os.system(str("adb -s " +self.serialID+ ' shell settings get secure selected_search_engine  '))
 	os.system(str("adb -s " +self.serialID+ ' shell settings get secure selected_search_engine_chrome  '))
-	print >> w , "-------------------------------------------------------------------------------------\n"
+	print  "-------------------------------------------------------------------------------------\n"
 
 
 def Turkey(self):
