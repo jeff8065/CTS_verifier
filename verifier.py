@@ -8,7 +8,7 @@ import subprocess
 #import tkMessageBox as messagebox
 import ttk
 from Tkinter import *
-from packages import DF_funtions, Remote_funtions, Ver_funtions, setting , TV_funtions
+from packages import DF_funtions, Remote_funtions, Ver_funtions, setting , TV_funtions , pasring_CTS_download
 
 
 class Main(object):
@@ -252,6 +252,8 @@ class Main(object):
 		installVerifier2Button = Button(install_funtion, text="install verifier", command=lambda: DF_funtions.installVerifier(self))
 		installVerifier2Button.grid(row=0, column=0, ipadx=1, ipady=3, pady=3,sticky=N+S+E+W)
 
+		DownloadVerifierButton = Button(install_funtion, text="Download verifier", command=lambda: pasring_CTS_download.download(self))
+		DownloadVerifierButton.grid(row=0, column=1,ipadx=1 ,ipady=3 , pady=3, sticky=N+S+E+W)
 
 		#######Administration#########
 		Usb_devuggingButton = Button(Administration_funtion, text="UsbDebugDialog ", command=lambda: Ver_funtions.USB_Debugging(self))
