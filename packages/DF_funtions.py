@@ -539,14 +539,17 @@ def installVerifier (self):
 		else:
 			os.system(str("adb -s "+self.serialID+" install -r  "+self.config['path']['source']+"OpenCV-android-sdk/OpenCV_3.0.0_Manager_3.00_"+self.abiType+".apk"))
 
-	if version.parse(self.androidVersion) >= version.parse("10"):
+	if version.parse(self.androidVersion) >= version.parse("10") or version.parse("11"):
 		os.system(self.push_cmd+"NotificationBot.apk  /data/local/tmp/")
 		os.system(self.install_cmd+"CtsForceStopHelper.apk")
 		os.system(str("adb -s "+self.serialID+ " install -r "+self.config['path']['source']+"MIDI_BLE.apk"))
 		os.system(self.instant_cmd+"CtsVerifierInstantApp.apk")
 		#for create report
 		os.system("adb -s " +self.serialID+ " shell appops set com.android.cts.verifier android:read_device_identifiers allow")
-		
+		os.system("adb -s " +self.serialID+ " shell settings put global hidden_api_policy 1")
+
+	if version.parse(self.androidVersion) >= version.parse("11"):
+		os.system("adb -s " +self.serialID+ " shell appops set com.android.cts.verifier MANAGE_EXTERNAL_STORAGE 0")
 
 					# if version.parse(androidVersion) >= version.parse("9.0"):
 					# 	os.system(install_cmd+"NotificationBot.apk")
