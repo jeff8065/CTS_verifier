@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /CTS_tool/CTSV/3PL_verifier
 config=$(ls | grep config.ini)
-
+echo "1"| sudo apt-get install python3-bs4 --update
 function gitsync()
 {
 	cd /CTS_tool/CTSV/3PL_verifier
