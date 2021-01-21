@@ -2,6 +2,7 @@
 cd /CTS_tool/CTSV/3PL_verifier
 config=$(ls | grep config.ini)
 echo "1"| sudo pip install beautifulsoup4
+echo "1"| sudo apt-get install python-requests
 function gitsync()
 {
 	cd /CTS_tool/CTSV/3PL_verifier
